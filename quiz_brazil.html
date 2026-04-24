@@ -384,7 +384,7 @@
       },
       {
         question: "Which sport is Brazil especially famous for?",
-        answers: ["Soccer", "Baseball", "Ice Hockey", "Volleyball"],
+        answers: ["Soccer", "Baseball", "Ice Hockey", "Cricket"],
         correct: 0,
         fact: "Soccer is a huge part of Brazilian culture. Brazil has won the men’s World Cup five times."
       },
@@ -413,7 +413,7 @@
         fact: "The Amazon rainforest is one of the most biodiverse places on Earth."
       },
       {
-        question: "What do the green and yellow colors on the flag represent?",
+        question: "What do the green and yellow colors on the Brazilian flag represent?",
         answers: ["Nature and natural wealth", "Fire and water", "War and peace", "Night and day"],
         correct: 0,
         fact: "Green represents Brazil’s forests and nature, and yellow represents its natural riches like gold."
@@ -438,7 +438,7 @@
       },
       {
         question: "Which city is famous for Christ the Redeemer?",
-        answers: ["Rio de Janeiro", "Buenos Aires", "San Paulo", "Brasília"],
+        answers: ["Rio de Janeiro", "New York", "Paris", "Tokyo"],
         correct: 0,
         fact: "Christ the Redeemer is one of Brazil’s most famous landmarks, located in Rio de Janeiro."
       }
@@ -517,10 +517,12 @@
       });
 
       if (isCorrect) {
+        playCorrect();
         score++;
         updateScore();
         showFeedback("Correct! 🎉", q.fact);
       } else {
+        playWrong();
         button.classList.add("wrong");
         showFeedback("Almost!", q.fact);
       }
@@ -550,5 +552,23 @@
       showScreen("endScreen");
     }
   </script>
+  <audio id="correctSound" src="https://actions.google.com/sounds/v1/cartoon/clang_and_wobble.ogg"></audio>
+  <audio id="wrongSound" src="https://actions.google.com/sounds/v1/cartoon/boing.ogg"></audio>
+
+  <script>
+    const correctSound = document.getElementById("correctSound");
+    const wrongSound = document.getElementById("wrongSound");
+
+    function playCorrect() {
+      correctSound.currentTime = 0;
+      correctSound.play();
+    }
+
+    function playWrong() {
+      wrongSound.currentTime = 0;
+      wrongSound.play();
+    }
+  </script>
+
 </body>
 </html>
