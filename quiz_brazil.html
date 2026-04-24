@@ -1,0 +1,554 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Brazil Cultural Fair Quiz</title>
+  <style>
+    :root {
+      --green: #009739;
+      --yellow: #ffdf00;
+      --blue: #002776;
+      --white: #ffffff;
+      --dark: #071b3a;
+      --light: #f7fbff;
+      --success: #18a558;
+      --wrong: #d63b3b;
+    }
+
+    * {
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+      user-select: none;
+    }
+
+    html, body {
+      margin: 0;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      font-family: Arial, Helvetica, sans-serif;
+      background: radial-gradient(circle at top, #0a4aa0 0%, var(--blue) 42%, #061633 100%);
+      color: var(--white);
+    }
+
+    body::before {
+      content: "";
+      position: fixed;
+      inset: -20%;
+      background:
+        linear-gradient(35deg, transparent 38%, rgba(255,223,0,0.95) 39%, rgba(255,223,0,0.95) 44%, transparent 45%),
+        linear-gradient(-35deg, transparent 38%, rgba(0,151,57,0.75) 39%, rgba(0,151,57,0.75) 44%, transparent 45%);
+      opacity: 0.55;
+      z-index: 0;
+    }
+
+    .app {
+      position: relative;
+      z-index: 1;
+      height: 100vh;
+      width: 100vw;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 28px;
+    }
+
+    .card {
+      width: min(980px, 100%);
+      height: min(1180px, 100%);
+      background: rgba(255,255,255,0.96);
+      color: var(--dark);
+      border-radius: 38px;
+      box-shadow: 0 28px 80px rgba(0,0,0,0.35);
+      border: 10px solid var(--yellow);
+      padding: 34px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      gap: 24px;
+    }
+
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 20px;
+    }
+
+    .badge {
+      background: var(--green);
+      color: white;
+      font-weight: 900;
+      font-size: clamp(24px, 4vw, 42px);
+      padding: 14px 24px;
+      border-radius: 999px;
+      letter-spacing: 0.5px;
+    }
+
+    .score {
+      background: var(--blue);
+      color: white;
+      font-weight: 900;
+      font-size: clamp(24px, 4vw, 38px);
+      padding: 14px 24px;
+      border-radius: 999px;
+    }
+
+    .screen {
+      display: none;
+      flex: 1;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      gap: 28px;
+    }
+
+    .screen.active { display: flex; }
+
+    h1 {
+      font-size: clamp(54px, 9vw, 100px);
+      line-height: 0.95;
+      margin: 0;
+      color: var(--blue);
+      font-weight: 1000;
+    }
+
+    h2 {
+      font-size: clamp(38px, 6vw, 70px);
+      line-height: 1.08;
+      margin: 0;
+      color: var(--blue);
+      font-weight: 1000;
+    }
+
+    p {
+      font-size: clamp(26px, 4vw, 42px);
+      line-height: 1.22;
+      margin: 0;
+      font-weight: 700;
+    }
+
+    .flag-dot {
+      width: 180px;
+      height: 180px;
+      border-radius: 50%;
+      background: var(--green);
+      display: grid;
+      place-items: center;
+      box-shadow: 0 14px 34px rgba(0,0,0,0.22);
+      transform: rotate(45deg);
+      margin-bottom: 8px;
+    }
+
+    .flag-dot::before {
+      content: "";
+      width: 118px;
+      height: 118px;
+      background: var(--yellow);
+      display: block;
+      transform: rotate(0deg);
+      border-radius: 18px;
+    }
+
+    .flag-dot::after {
+      content: "🇧🇷";
+      position: absolute;
+      transform: rotate(-45deg);
+      font-size: 80px;
+    }
+
+    .question-number {
+      font-size: clamp(22px, 3.4vw, 34px);
+      font-weight: 900;
+      color: var(--green);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .answers {
+      width: 100%;
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 18px;
+      margin-top: 10px;
+    }
+
+    button {
+      border: none;
+      font-family: inherit;
+      cursor: pointer;
+      touch-action: manipulation;
+    }
+
+    .answer {
+      width: 100%;
+      min-height: 92px;
+      padding: 22px 26px;
+      border-radius: 26px;
+      font-size: clamp(28px, 4.7vw, 50px);
+      font-weight: 1000;
+      color: var(--dark);
+      background: #eef4ff;
+      border: 5px solid #d6e2f8;
+      box-shadow: 0 8px 0 #c5d4ef;
+      transition: transform 0.08s ease, box-shadow 0.08s ease, background 0.2s ease;
+    }
+
+    .answer:active {
+      transform: translateY(6px);
+      box-shadow: 0 2px 0 #c5d4ef;
+    }
+
+    .answer.correct {
+      background: #dff8e9;
+      border-color: var(--success);
+      color: #075a2b;
+      box-shadow: 0 8px 0 #76c996;
+    }
+
+    .answer.wrong {
+      background: #ffe1e1;
+      border-color: var(--wrong);
+      color: #7a1010;
+      box-shadow: 0 8px 0 #e89595;
+    }
+
+    .primary {
+      background: var(--yellow);
+      color: var(--blue);
+      font-size: clamp(32px, 5vw, 58px);
+      font-weight: 1000;
+      border-radius: 999px;
+      padding: 24px 42px;
+      box-shadow: 0 12px 0 #d2b600;
+      min-width: 72%;
+    }
+
+    .primary:active {
+      transform: translateY(8px);
+      box-shadow: 0 4px 0 #d2b600;
+    }
+
+    .secondary {
+      background: var(--green);
+      color: white;
+      font-size: clamp(24px, 4vw, 42px);
+      font-weight: 900;
+      border-radius: 999px;
+      padding: 18px 32px;
+    }
+
+    .feedback {
+      min-height: 130px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      gap: 10px;
+      padding: 20px;
+      border-radius: 28px;
+      background: #f2f7ff;
+      border: 4px dashed #c9daf7;
+    }
+
+    .feedback-title {
+      font-size: clamp(34px, 5vw, 58px);
+      font-weight: 1000;
+    }
+
+    .feedback-text {
+      font-size: clamp(22px, 3.5vw, 34px);
+      font-weight: 800;
+      line-height: 1.18;
+    }
+
+    .footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      color: var(--blue);
+      font-size: clamp(18px, 2.8vw, 28px);
+      font-weight: 900;
+      opacity: 0.9;
+    }
+
+    .progress {
+      width: 100%;
+      height: 18px;
+      background: #d7e3f7;
+      border-radius: 999px;
+      overflow: hidden;
+    }
+
+    .progress-fill {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, var(--green), var(--yellow));
+      transition: width 0.25s ease;
+    }
+
+    .emoji-row {
+      font-size: clamp(46px, 8vw, 90px);
+      letter-spacing: 8px;
+    }
+
+    @media (orientation: landscape) {
+      .card {
+        width: min(1180px, 100%);
+        height: min(760px, 100%);
+        padding: 26px;
+      }
+
+      .answers {
+        grid-template-columns: 1fr 1fr;
+      }
+
+      .answer {
+        min-height: 86px;
+      }
+
+      .flag-dot {
+        width: 130px;
+        height: 130px;
+      }
+
+      .flag-dot::before {
+        width: 84px;
+        height: 84px;
+      }
+
+      .flag-dot::after {
+        font-size: 58px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="app">
+    <section class="card">
+      <div class="topbar">
+        <div class="badge">Brazil 🇧🇷</div>
+        <div class="score" id="score">Score: 0</div>
+      </div>
+
+      <div id="startScreen" class="screen active">
+        <div class="flag-dot"></div>
+        <h1>Brazil Quiz</h1>
+        <p>Tap to play and discover fun facts about Brazilian culture.</p>
+        <button class="primary" onclick="startQuiz()">Start Quiz</button>
+      </div>
+
+      <div id="quizScreen" class="screen">
+        <div class="question-number" id="questionNumber">Question 1</div>
+        <h2 id="questionText">Question text</h2>
+        <div class="answers" id="answers"></div>
+        <div class="feedback" id="feedback" style="visibility:hidden;">
+          <div class="feedback-title" id="feedbackTitle"></div>
+          <div class="feedback-text" id="feedbackText"></div>
+        </div>
+      </div>
+
+      <div id="endScreen" class="screen">
+        <div class="emoji-row">🎉 🇧🇷 🥁</div>
+        <h1>Great job!</h1>
+        <p id="finalText">You learned about Brazil!</p>
+        <button class="primary" onclick="startQuiz()">Play Again</button>
+      </div>
+
+      <div>
+        <div class="progress"><div class="progress-fill" id="progressFill"></div></div>
+        <div class="footer">
+          <span>Brazil Cultural Fair</span>
+          <span>Tap an answer</span>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    const allQuestions = [
+      {
+        question: "What language do people speak in Brazil?",
+        answers: ["Portuguese", "Spanish", "French", "English"],
+        correct: 0,
+        fact: "Brazil is the only country in South America where Portuguese is the official language."
+      },
+      {
+        question: "What is a famous Brazilian celebration?",
+        answers: ["Carnival", "Thanksgiving", "Oktoberfest", "Hanukkah"],
+        correct: 0,
+        fact: "Carnival is one of Brazil’s most famous celebrations, with music, costumes and parades."
+      },
+      {
+        question: "Which sport is Brazil especially famous for?",
+        answers: ["Soccer", "Baseball", "Ice Hockey", "Volleyball"],
+        correct: 0,
+        fact: "Soccer is a huge part of Brazilian culture. Brazil has won the men’s World Cup five times."
+      },
+      {
+        question: "What is pão de queijo?",
+        answers: ["Cheese bread", "Chocolate cake", "Rice pudding", "Fried fish"],
+        correct: 0,
+        fact: "Pão de queijo is a traditional cheese bread from Brazil, especially popular in Minas Gerais."
+      },
+      {
+        question: "What is Romeu e Julieta in Brazilian food?",
+        answers: ["Cheese with guava paste", "Rice and beans", "Chicken soup", "Banana with honey"],
+        correct: 0,
+        fact: "Romeu e Julieta is a sweet and salty combo: cheese with guava paste."
+      },
+      {
+        question: "Where is Brazil located?",
+        answers: ["South America", "Europe", "Asia", "Africa"],
+        correct: 0,
+        fact: "Brazil is the largest country in South America."
+      },
+      {
+        question: "Which rainforest is partly in Brazil?",
+        answers: ["Amazon", "Black Forest", "Sherwood", "Daintree"],
+        correct: 0,
+        fact: "The Amazon rainforest is one of the most biodiverse places on Earth."
+      },
+      {
+        question: "What do the green and yellow colors on the flag represent?",
+        answers: ["Nature and natural wealth", "Fire and water", "War and peace", "Night and day"],
+        correct: 0,
+        fact: "Green represents Brazil’s forests and nature, and yellow represents its natural riches like gold."
+      },
+      {
+        question: "What is a pandeiro?",
+        answers: ["A Brazilian percussion instrument", "A type of hat", "A dessert", "A dance shoe"],
+        correct: 0,
+        fact: "The pandeiro is used in Brazilian music like samba, choro and capoeira."
+      },
+      {
+        question: "What does “Oi” mean in Portuguese?",
+        answers: ["Hi", "Goodbye", "Thank you", "Please"],
+        correct: 0,
+        fact: "In Portuguese, “Oi” means “Hi.”"
+      },
+      {
+        question: "How do you say “thank you” in Portuguese?",
+        answers: ["Obrigado / Obrigada", "Hola", "Merci", "Ciao"],
+        correct: 0,
+        fact: "Obrigado or obrigada means thank you in Portuguese."
+      },
+      {
+        question: "Which city is famous for Christ the Redeemer?",
+        answers: ["Rio de Janeiro", "Buenos Aires", "San Paulo", "Brasília"],
+        correct: 0,
+        fact: "Christ the Redeemer is one of Brazil’s most famous landmarks, located in Rio de Janeiro."
+      }
+    ];
+
+    let questions = [];
+    let current = 0;
+    let score = 0;
+    let locked = false;
+    const questionCount = 6;
+
+    function shuffle(array) {
+      const copy = [...array];
+      for (let i = copy.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [copy[i], copy[j]] = [copy[j], copy[i]];
+      }
+      return copy;
+    }
+
+    function startQuiz() {
+      questions = shuffle(allQuestions).slice(0, questionCount).map(q => {
+        const answerObjects = q.answers.map((text, index) => ({ text, isCorrect: index === q.correct }));
+        return { ...q, answerObjects: shuffle(answerObjects) };
+      });
+      current = 0;
+      score = 0;
+      locked = false;
+      updateScore();
+      showScreen("quizScreen");
+      showQuestion();
+    }
+
+    function showScreen(id) {
+      document.querySelectorAll(".screen").forEach(s => s.classList.remove("active"));
+      document.getElementById(id).classList.add("active");
+    }
+
+    function updateScore() {
+      document.getElementById("score").textContent = `Score: ${score}`;
+    }
+
+    function showQuestion() {
+      locked = false;
+      const q = questions[current];
+      document.getElementById("questionNumber").textContent = `Question ${current + 1} of ${questions.length}`;
+      document.getElementById("questionText").textContent = q.question;
+      document.getElementById("feedback").style.visibility = "hidden";
+      document.getElementById("feedbackTitle").textContent = "";
+      document.getElementById("feedbackText").textContent = "";
+
+      const answersDiv = document.getElementById("answers");
+      answersDiv.innerHTML = "";
+
+      q.answerObjects.forEach(answer => {
+        const btn = document.createElement("button");
+        btn.className = "answer";
+        btn.textContent = answer.text;
+        btn.onclick = () => chooseAnswer(btn, answer.isCorrect);
+        answersDiv.appendChild(btn);
+      });
+
+      updateProgress();
+    }
+
+    function chooseAnswer(button, isCorrect) {
+      if (locked) return;
+      locked = true;
+
+      const q = questions[current];
+      const buttons = document.querySelectorAll(".answer");
+
+      buttons.forEach(btn => {
+        const matching = q.answerObjects.find(a => a.text === btn.textContent);
+        if (matching && matching.isCorrect) btn.classList.add("correct");
+      });
+
+      if (isCorrect) {
+        score++;
+        updateScore();
+        showFeedback("Correct! 🎉", q.fact);
+      } else {
+        button.classList.add("wrong");
+        showFeedback("Almost!", q.fact);
+      }
+
+      setTimeout(() => {
+        current++;
+        if (current >= questions.length) finishQuiz();
+        else showQuestion();
+      }, 2700);
+    }
+
+    function showFeedback(title, text) {
+      const feedback = document.getElementById("feedback");
+      document.getElementById("feedbackTitle").textContent = title;
+      document.getElementById("feedbackText").textContent = text;
+      feedback.style.visibility = "visible";
+    }
+
+    function updateProgress() {
+      const percent = (current / questions.length) * 100;
+      document.getElementById("progressFill").style.width = `${percent}%`;
+    }
+
+    function finishQuiz() {
+      document.getElementById("progressFill").style.width = "100%";
+      document.getElementById("finalText").textContent = `You scored ${score} out of ${questions.length}. Thanks for visiting Brazil!`;
+      showScreen("endScreen");
+    }
+  </script>
+</body>
+</html>
